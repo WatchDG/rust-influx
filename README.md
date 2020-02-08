@@ -1,1 +1,1 @@
-# wdg-influx
+# influx

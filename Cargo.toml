@@ -9,6 +9,7 @@ edition = "2018"
 exclude = [
     ".github",
     ".gitignore",
+    "src/main.rs",
     "README.md"
 ]
 

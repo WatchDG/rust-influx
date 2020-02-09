@@ -1,7 +1,7 @@
 [package]
 name = "influx"
 description = "influx"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Grigoriy Baranov <baranov@w3m.co>"]
 license = "MIT"
 edition = "2018"
@@ -14,3 +14,4 @@ exclude = [
 ]
 
 [dependencies]
+wdg-uri = "0.1.9"

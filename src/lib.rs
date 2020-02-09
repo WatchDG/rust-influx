@@ -1,3 +1,5 @@
+extern crate wdg_uri;
+
 use std::error::Error;
 use std::fmt;
 use std::io::{Read, Write};
@@ -42,14 +44,26 @@ impl fmt::Display for InfluxError {
 
 impl Error for InfluxError {}
 
+pub enum Authentication {
+    None,
+    BasicAuthenticationQueryParameters(String, String),
+    BasicAuthenticationRequestBody(String, String),
+}
+
 pub struct Influx {
     uri: String,
     stream: Option<TcpStream>,
+    #[allow(dead_code)]
+    authentication: Authentication,
 }
 
 impl Influx {
     pub fn new(uri: String) -> Influx {
-        Influx { uri, stream: None }
+        Influx {
+            uri,
+            stream: None,
+            authentication: Authentication::None,
+        }
     }
     pub fn connect(&mut self) -> Result<(), Box<dyn Error>> {
         let stream = TcpStream::connect(&self.uri)?;

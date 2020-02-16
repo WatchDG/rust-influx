@@ -1,7 +1,7 @@
 [package]
 name = "influx"
 description = "influx"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Grigoriy Baranov <baranov@w3m.co>"]
 license = "MIT"
 edition = "2018"

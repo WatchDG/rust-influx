@@ -30,18 +30,22 @@ impl Influx {
             authentication: Authentication::None,
         }
     }
-    fn get_stream(&mut self) -> Result<&mut TcpStream, Box<InfluxError>> {
+    fn get_stream(&mut self) -> Result<&mut TcpStream, InfluxError> {
         self.stream
             .as_mut()
-            .ok_or_else(|| Box::new(InfluxError::TcpStreamIsNone))
+            .ok_or_else(|| InfluxError::TcpStreamIsNone)
     }
     pub fn connect(&mut self) -> Result<(), Box<dyn Error>> {
         self.get_stream()
             .map(|_| ())
-            .or_else(|_e| -> Result<(), Box<dyn Error>> {
-                let stream = TcpStream::connect(&self.uri)?;
-                self.stream = Some(stream);
-                Ok(())
+            .or_else(|e| -> Result<(), Box<dyn Error>> {
+                match e {
+                    InfluxError::TcpStreamIsNone => {
+                        let stream = TcpStream::connect(&self.uri)?;
+                        self.stream = Some(stream);
+                        Ok(())
+                    }
+                }
             })
     }
     pub fn disconnect(&mut self) -> Result<(), Box<dyn Error>> {

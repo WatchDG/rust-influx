@@ -1,8 +1,8 @@
-pub struct MeasurementTag(String, String);
-pub struct MeasurementField(String, String);
+pub struct Tag(String, String);
+pub struct Field(String, String);
 pub struct Measurement {
     name: String,
-    tags: Option<Vec<MeasurementTag>>,
-    fields: Vec<MeasurementField>,
+    tags: Option<Vec<Tag>>,
+    fields: Vec<Field>,
     timestamp: Option<i64>,
 }

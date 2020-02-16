@@ -1,3 +1,4 @@
+extern crate string_repr;
 extern crate wdg_uri;
 
 pub mod influx_error;
@@ -6,6 +7,8 @@ use influx_error::InfluxError;
 use std::error::Error;
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpStream};
+use string_repr::StringRepr;
+use wdg_uri::query::Query;
 
 pub enum Authentication {
     None,
@@ -18,7 +21,6 @@ pub enum Authentication {
 pub struct Influx {
     uri: String,
     stream: Option<TcpStream>,
-    #[allow(dead_code)]
     authentication: Authentication,
 }
 
@@ -60,8 +62,36 @@ impl Influx {
             "HEAD /ping HTTP/1.1\r\nHost: {}\r\n\r\n",
             host
         ))?;
-        let mut buffer = [0u8; 12];
-        stream.read_exact(&mut buffer)?;
-        Ok(buffer[9] == 0x32 && buffer[10] == 0x30 && buffer[11] == 0x34)
+        const BUFFER_SIZE: usize = 1024;
+        let mut buffer = [0u8; BUFFER_SIZE];
+        let mut n = stream.read(&mut buffer)?;
+        let result = buffer[9] == 0x32 && buffer[10] == 0x30 && buffer[11] == 0x34;
+        while n == BUFFER_SIZE {
+            n = stream.read(&mut buffer)?;
+        }
+        Ok(result)
+    }
+    pub fn auth(&mut self, auth: Authentication) -> Result<bool, Box<dyn Error>> {
+        self.authentication = auth;
+        Ok(true)
+    }
+    pub fn query_get(&mut self, query: Query) -> Result<String, Box<dyn Error>> {
+        let host = self.uri.clone();
+        let stream = self.get_stream()?;
+        stream.write_fmt(format_args!(
+            "GET /query{} HTTP/1.1\r\nHost: {}\r\n\r\n",
+            query.string_repr(),
+            host
+        ))?;
+        const BUFFER_SIZE: usize = 2048;
+        let mut buffer = [0u8; BUFFER_SIZE];
+        let mut n = stream.read(&mut buffer)?;
+        let mut string = String::new();
+        string.push_str(String::from_utf8_lossy(&buffer).as_ref());
+        while n == BUFFER_SIZE {
+            n = stream.read(&mut buffer)?;
+            string.push_str(String::from_utf8_lossy(&buffer).as_ref());
+        }
+        Ok(string)
     }
 }
